@@ -4,16 +4,17 @@ This file is a demonstration for scraping job information from indeed (https://w
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep
-import requests
 from selenium.webdriver.common.keys import Keys
+import requests
+from bs4 import BeautifulSoup
 import pandas as pd
 import lxml
-
 
 global indeed_url
 global indeed_ja_url
 indeed_url = "https://www.indeed.com/"
 indeed_ja_url = "https://jp.indeed.com/"
+
 
 def scrape_indeed():
     # Configure settings for using driver
@@ -32,19 +33,35 @@ def scrape_indeed():
 
     # Reached the website.
     # Now enter "エンジニア" (Engineer) for the job category, and "東京" (Tokyo) for the location, then click enter.
-    driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア")
-    driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys("東京")
-    driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[3]/button").send_keys(Keys.ENTER)
+    driver.find_element_by_xpath(
+        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア")
+    driver.find_element_by_xpath(
+        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys("東京")
+    driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[3]/button").send_keys(
+        Keys.ENTER)
     print(driver.title, "is the page.")
     print(driver.current_url, "is the current url")
-    print(driver.page_source)
+    # print(driver.page_source)
+
+    # Use BeautifulSoup to scrape the website.
+    res_url = driver.current_url
+    raw_html = requests.get(res_url).text
+    soup = BeautifulSoup(raw_html, "lxml")
+    # print(soup.prettify())
+    page_content = soup.find("table", attrs={"id": "pageContent"})
+    # print(page_content)
+    job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
+
+    for job_card in job_cards: print(job_card)
 
     # Use pandas to get the job results table.
-    res_url = driver.current_url
-    dfs = pd.read_html(res_url)
+    # dfs = pd.read_html(res_url)
+    # print(len(dfs))
+    # print(dfs)
 
     # r = requests.get(driver.current_url)
     # print(r.content)
+
 
 if __name__ == "__main__":
     scrape_indeed()
