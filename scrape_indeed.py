@@ -7,6 +7,7 @@ from time import sleep
 import requests
 from selenium.webdriver.common.keys import Keys
 import pandas as pd
+import lxml
 
 
 global indeed_url
