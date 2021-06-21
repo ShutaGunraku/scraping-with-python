@@ -29,7 +29,7 @@ def scrape_indeed():
     options.add_argument('--lang=en')
     driver = webdriver.Chrome('./bin/chromedriver', options=options)
     driver.get(indeed_ja_url)
-    sleep(5)
+    sleep(1)
 
     # Reached the website.
     # Now enter "エンジニア" (Engineer) for the job category, and "東京" (Tokyo) for the location, then click enter.
@@ -52,7 +52,10 @@ def scrape_indeed():
     # print(page_content)
     job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
 
-    for job_card in job_cards: print(job_card)
+    for job_card in job_cards:
+        # print(job_card)
+        job_summary = job_card.find("a", attrs={"class": "jobtitle"}).get("title")
+        # print(job_summary)
 
     # Use pandas to get the job results table.
     # dfs = pd.read_html(res_url)
