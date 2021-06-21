@@ -6,6 +6,7 @@ from selenium.webdriver.chrome.options import Options
 from time import sleep
 import requests
 from selenium.webdriver.common.keys import Keys
+import pandas as pd
 
 
 global indeed_url
@@ -28,13 +29,18 @@ def scrape_indeed():
     driver.get(indeed_ja_url)
     sleep(5)
 
-    # Reached the destination
+    # Reached the website.
+    # Now enter "エンジニア" (Engineer) for the job category, and "東京" (Tokyo) for the location, then click enter.
     driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア")
     driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys("東京")
     driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[3]/button").send_keys(Keys.ENTER)
     print(driver.title, "is the page.")
     print(driver.current_url, "is the current url")
     print(driver.page_source)
+
+    # Use pandas to get the job results table.
+    res_url = driver.current_url
+    dfs = pd.read_html(res_url)
 
     # r = requests.get(driver.current_url)
     # print(r.content)
