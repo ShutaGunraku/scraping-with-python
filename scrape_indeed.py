@@ -54,8 +54,12 @@ def scrape_indeed():
 
     for job_card in job_cards:
         # print(job_card)
+
+        # Get the job summary
         job_summary = job_card.find("a", attrs={"class": "jobtitle"}).get("title")
         # print(job_summary)
+        job_desc = job_card.find("div", attrs={"class": "summary"})
+        print(job_desc)
 
     # Use pandas to get the job results table.
     # dfs = pd.read_html(res_url)
