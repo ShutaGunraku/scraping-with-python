@@ -52,19 +52,44 @@ def scrape_indeed():
     # print(page_content)
     job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
 
+    data_list = []
     for job_card in job_cards:
-        # print(job_card)
-
-        # Get the job summary
-        job_summary = job_card.find("a", attrs={"class": "jobtitle"}).get("title")
-        # print(job_summary)
-        job_desc = job_card.find("div", attrs={"class": "summary"})
-        print(job_desc)
+        print(job_card)
+        data = []
+        # Get the job info by scraping with BeautifulSoup
+        try: job_title = job_card.find("a", attrs={"class": "jobtitle"}).get("title").replace("\n", "")
+        except: job_title = None
+        try: company_name = job_card.find("span", attrs={"class": "company"}).text.replace("\n", "")
+        except: company_name = None
+        try: location = job_card.find("div", attrs={"class": "location"}).text.replace("\n", "")
+        except: location = None
+        try: income = job_card.find("span", attrs={"class": "salaryText"}).text.replace("\n", "")
+        except: income = None
+        try: job_type = job_card.find("div", attrs={"class": "jobTypeLabelsWrapper"}).text.replace("\n", "")
+        except: job_type = None
+        print("company name:", company_name)
+        print("job title:", job_title)
+        print("location:", location)
+        print("income:", income)
+        print("job type:", job_type)
+        data.append(company_name)
+        data.append(job_title)
+        data.append(location)
+        data.append(income)
+        data.append(job_type)
+        data_list.append(data)
+        print(data_list)
+        break
 
     # Use pandas to get the job results table.
-    # dfs = pd.read_html(res_url)
-    # print(len(dfs))
-    # print(dfs)
+    df = pd.DataFrame(data_list)
+
+    # Show all the columns
+    pd.set_option("display.max_columns", None)
+
+    df.columns = ["Company Name", "Job Title", "Location", "Income", "Job Type"]
+    print(len(df))
+    print(df)
 
     # r = requests.get(driver.current_url)
     # print(r.content)
