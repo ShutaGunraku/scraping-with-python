@@ -32,54 +32,62 @@ def scrape_indeed():
     sleep(1)
 
     # Reached the website.
-    # Now enter "エンジニア" (Engineer) for the job category, and "東京" (Tokyo) for the location, then click enter.
+    # Enter "エンジニア" (Engineer) for the job category, and "東京" (Tokyo) for the location, then click enter.
     driver.find_element_by_xpath(
-        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア")
+        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア 在宅 簡単　インターン")
     driver.find_element_by_xpath(
         "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys("東京")
     driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[3]/button").send_keys(
         Keys.ENTER)
     print(driver.title, "is the page.")
-    print(driver.current_url, "is the current url")
-    # print(driver.page_source)
-
-    # Use BeautifulSoup to scrape the website.
-    res_url = driver.current_url
-    raw_html = requests.get(res_url).text
-    soup = BeautifulSoup(raw_html, "lxml")
-    # print(soup.prettify())
-    page_content = soup.find("table", attrs={"id": "pageContent"})
-    # print(page_content)
-    job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
 
     data_list = []
-    for job_card in job_cards:
-        print(job_card)
-        data = []
-        # Get the job info by scraping with BeautifulSoup
-        try: job_title = job_card.find("a", attrs={"class": "jobtitle"}).get("title").replace("\n", "")
-        except: job_title = None
-        try: company_name = job_card.find("span", attrs={"class": "company"}).text.replace("\n", "")
-        except: company_name = None
-        try: location = job_card.find("div", attrs={"class": "location"}).text.replace("\n", "")
-        except: location = None
-        try: income = job_card.find("span", attrs={"class": "salaryText"}).text.replace("\n", "")
-        except: income = None
-        try: job_type = job_card.find("div", attrs={"class": "jobTypeLabelsWrapper"}).text.replace("\n", "")
-        except: job_type = None
-        print("company name:", company_name)
-        print("job title:", job_title)
-        print("location:", location)
-        print("income:", income)
-        print("job type:", job_type)
-        data.append(company_name)
-        data.append(job_title)
-        data.append(location)
-        data.append(income)
-        data.append(job_type)
-        data_list.append(data)
-        print(data_list)
-        break
+    page = 1
+    print("the first page", page)
+    print("url is", driver.current_url)
+    while True:
+        # Use BeautifulSoup to scrape the website.
+        res_url = driver.current_url
+        raw_html = requests.get(res_url).text
+        soup = BeautifulSoup(raw_html, "lxml")
+        # print(soup.prettify())
+        page_content = soup.find("table", attrs={"id": "pageContent"})
+        # print(page_content)
+        job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
+        
+        for job_card in job_cards:
+            # print(job_card)
+            data = []
+            # Get the job info by scraping with BeautifulSoup
+            try: job_title = job_card.find("a", attrs={"class": "jobtitle"}).get("title").replace("\n", "")
+            except: job_title = None
+            try: company_name = job_card.find("span", attrs={"class": "company"}).text.replace("\n", "")
+            except: company_name = None
+            try: location = job_card.find("div", attrs={"class": "location"}).text.replace("\n", "")
+            except: location = None
+            try: income = job_card.find("span", attrs={"class": "salaryText"}).text.replace("\n", "")
+            except: income = None
+            try: job_type = job_card.find("div", attrs={"class": "jobTypeLabelsWrapper"}).text.replace("\n", "")
+            except: job_type = None
+            # print("company name:", company_name)
+            # print("job title:", job_title)
+            # print("location:", location)
+            # print("income:", income)
+            # print("job type:", job_type)
+            data.append(company_name)
+            data.append(job_title)
+            data.append(location)
+            data.append(income)
+            data.append(job_type)
+            data_list.append(data)
+            # print(data_list)
+            # break
+        next_page = driver.find_element_by_class_name("pn")
+        print("next page is", next_page.text)
+        if next_page.text == "":
+            break
+        next_page.click()
+        print("url is", driver.current_url)
 
     # Use pandas to get the job results table.
     df = pd.DataFrame(data_list)
