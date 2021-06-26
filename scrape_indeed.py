@@ -14,7 +14,7 @@ global indeed_ja_url
 indeed_ja_url = "https://jp.indeed.com/"
 
 
-def scrape_indeed():
+def scrape_indeed(job, location):
     # Configure settings for using driver
     options = webdriver.ChromeOptions()
     options.binary_location = "./bin/headless-chromium"
@@ -32,11 +32,9 @@ def scrape_indeed():
     # Reached the website.
     # Enter "エンジニア" (Engineer) for the job category, and "東京" (Tokyo) for the location, then click enter.
     driver.find_element_by_xpath(
-        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア 在宅　簡単　週4 未経験　サポート")
-    # driver.find_element_by_xpath(
-    #     "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア")
+        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys(job)
     driver.find_element_by_xpath(
-        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys("東京都 府中市")
+        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys(location)
     driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[3]/button").send_keys(
         Keys.ENTER)
     print(driver.title, "is the page.")
@@ -79,13 +77,10 @@ def scrape_indeed():
             data.append(job_type)
             data_list.append(data)
 
-        # print(page_content)
         next_page = driver.find_elements_by_class_name("pn")
         print(driver.current_url)
         condition = False
         for pn in next_page:
-            # try:
-            #     print("pn text is", pn.text)
             try:
                 if pn.text == str(page_number + 1):
                     print("the next page is", pn.text)
@@ -95,30 +90,22 @@ def scrape_indeed():
                     condition = True
             except:
                 continue
-
-            # except:
-            #     print("error")
-            #     res_url = driver.current_url
-            #     raw_html = requests.get(res_url).text
-            #     soup = BeautifulSoup(raw_html, "lxml")
-            #     page_content = soup.find("table", attrs={"id": "pageContent"})
-            #     print(page_content)
-
+        
         if not condition:
             print("exiting")
             break
 
-    # # Use pandas to get the job results table.
+    # Use pandas to get the job results table.
     df = pd.DataFrame(data_list)
-
     # Show all the columns
     pd.set_option("display.max_columns", None)
-
+    # Add column names
     df.columns = ["Company Name", "Job Title", "Location", "Income", "Job Type"]
     print(len(df))
     print(df)
+    # Output the data to a csv file
     df.to_csv('indeed_engineer_jobs.csv', encoding='utf-8')
 
 
 if __name__ == "__main__":
-    scrape_indeed()
+    scrape_indeed("エンジニア 在宅　簡単　週4 未経験　サポート", "東京都 府中市")
