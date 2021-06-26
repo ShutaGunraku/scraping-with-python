@@ -10,9 +10,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import lxml
 
-global indeed_url
 global indeed_ja_url
-indeed_url = "https://www.indeed.com/"
 indeed_ja_url = "https://jp.indeed.com/"
 
 
@@ -34,27 +32,32 @@ def scrape_indeed():
     # Reached the website.
     # Enter "エンジニア" (Engineer) for the job category, and "東京" (Tokyo) for the location, then click enter.
     driver.find_element_by_xpath(
-        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア 在宅 簡単　インターン")
+        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア 在宅　簡単　週4 未経験　サポート")
+    # driver.find_element_by_xpath(
+    #     "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys("エンジニア")
     driver.find_element_by_xpath(
-        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys("東京")
+        "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys("東京都 府中市")
     driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[3]/button").send_keys(
         Keys.ENTER)
     print(driver.title, "is the page.")
 
+    # Scrape the job info and store in data_list[]
     data_list = []
     page = 1
     print("the first page", page)
     print("url is", driver.current_url)
+
+    page_number = 0
     while True:
+        page_number += 1
         # Use BeautifulSoup to scrape the website.
         res_url = driver.current_url
         raw_html = requests.get(res_url).text
         soup = BeautifulSoup(raw_html, "lxml")
-        # print(soup.prettify())
         page_content = soup.find("table", attrs={"id": "pageContent"})
         # print(page_content)
         job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
-        
+
         for job_card in job_cards:
             # print(job_card)
             data = []
@@ -69,27 +72,43 @@ def scrape_indeed():
             except: income = None
             try: job_type = job_card.find("div", attrs={"class": "jobTypeLabelsWrapper"}).text.replace("\n", "")
             except: job_type = None
-            # print("company name:", company_name)
-            # print("job title:", job_title)
-            # print("location:", location)
-            # print("income:", income)
-            # print("job type:", job_type)
             data.append(company_name)
             data.append(job_title)
             data.append(location)
             data.append(income)
             data.append(job_type)
             data_list.append(data)
-            # print(data_list)
-            # break
-        next_page = driver.find_element_by_class_name("pn")
-        print("next page is", next_page.text)
-        if next_page.text == "":
-            break
-        next_page.click()
-        print("url is", driver.current_url)
 
-    # Use pandas to get the job results table.
+        # print(page_content)
+        next_page = driver.find_elements_by_class_name("pn")
+        print(driver.current_url)
+        condition = False
+        for pn in next_page:
+            # try:
+            #     print("pn text is", pn.text)
+            try:
+                if pn.text == str(page_number + 1):
+                    print("the next page is", pn.text)
+                    pn.click()
+                    print("url is", driver.current_url)
+                    driver.get(driver.current_url)
+                    condition = True
+            except:
+                continue
+
+            # except:
+            #     print("error")
+            #     res_url = driver.current_url
+            #     raw_html = requests.get(res_url).text
+            #     soup = BeautifulSoup(raw_html, "lxml")
+            #     page_content = soup.find("table", attrs={"id": "pageContent"})
+            #     print(page_content)
+
+        if not condition:
+            print("exiting")
+            break
+
+    # # Use pandas to get the job results table.
     df = pd.DataFrame(data_list)
 
     # Show all the columns
@@ -98,9 +117,7 @@ def scrape_indeed():
     df.columns = ["Company Name", "Job Title", "Location", "Income", "Job Type"]
     print(len(df))
     print(df)
-
-    # r = requests.get(driver.current_url)
-    # print(r.content)
+    df.to_csv('indeed_engineer_jobs.csv', encoding='utf-8')
 
 
 if __name__ == "__main__":
