@@ -28,7 +28,6 @@ def scrape_indeed(job, location):
     options = webdriver.ChromeOptions()
     options.binary_location = "./bin/headless-chromium"
     options = Options()
-
     # options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
