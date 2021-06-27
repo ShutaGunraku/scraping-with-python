@@ -1,6 +1,7 @@
 """
 This file is a demonstration for scraping job information from indeed (https://www.indeed.com/).
 """
+__author__ = "Shuta Gunraku"
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from time import sleep
@@ -15,6 +16,12 @@ indeed_ja_url = "https://jp.indeed.com/"
 
 
 def scrape_indeed(job, location):
+    """
+    This function will visit the website of indeed, and search the site for job offers
+    using parameters for the search condition.
+    :param job: The job category with which the search will be looking for jobs.
+    :param location: The location within which the search will be conducted.
+    """
     # Configure settings for using driver
     options = webdriver.ChromeOptions()
     options.binary_location = "./bin/headless-chromium"
@@ -54,9 +61,8 @@ def scrape_indeed(job, location):
         job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
 
         for job_card in job_cards:
-            # print(job_card)
-            data = []
             # Get the job info by scraping with BeautifulSoup
+            data = []
             try: job_title = job_card.find("a", attrs={"class": "jobtitle"}).get("title").replace("\n", "")
             except: job_title = None
             try: company_name = job_card.find("span", attrs={"class": "company"}).text.replace("\n", "")
