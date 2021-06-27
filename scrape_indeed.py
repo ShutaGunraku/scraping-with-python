@@ -22,10 +22,13 @@ def scrape_indeed(job, location):
     :param job: The job category with which the search will be looking for jobs.
     :param location: The location within which the search will be conducted.
     """
+    print("Scraping Initiated.")
+
     # Configure settings for using driver
     options = webdriver.ChromeOptions()
     options.binary_location = "./bin/headless-chromium"
     options = Options()
+
     # options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
@@ -48,10 +51,6 @@ def scrape_indeed(job, location):
 
         # Scrape the job info and store in data_list[]
         data_list = []
-        page = 1
-        print("the first page", page)
-        print("url is", driver.current_url)
-
         page_number = 0
         while True:
             page_number += 1
@@ -60,7 +59,6 @@ def scrape_indeed(job, location):
             raw_html = requests.get(res_url).text
             soup = BeautifulSoup(raw_html, "lxml")
             page_content = soup.find("table", attrs={"id": "pageContent"})
-            # print(page_content)
             job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
 
             for job_card in job_cards:
@@ -85,11 +83,10 @@ def scrape_indeed(job, location):
 
             try:
                 page_button = driver.find_element_by_xpath(f"//span[@class='pn' and text()='{str(page_number + 1)}']")
-                print("The page button", page_button.text)
                 page_button.click()
-                print("url is", driver.current_url)
                 driver.get(driver.current_url)
                 sleep(2)
+
             except:
                 print("Exiting")
                 break
@@ -104,10 +101,10 @@ def scrape_indeed(job, location):
     pd.set_option("display.max_columns", None)
     # Add column names
     df.columns = ["Company Name", "Job Title", "Location", "Income", "Job Type"]
-    print(df)
+    df.sort_values(by=["Company Name"])
     # Output the data to a csv file
     df.to_csv('indeed_engineer_jobs.csv', encoding='utf-8')
 
 
 if __name__ == "__main__":
-    scrape_indeed("エンジニア", "東京都 府中市")
+    scrape_indeed("エンジニア 在宅　インターン", "東京都 府中市")
