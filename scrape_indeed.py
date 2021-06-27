@@ -28,7 +28,7 @@ def scrape_indeed(job, location):
     options = webdriver.ChromeOptions()
     options.binary_location = "./bin/headless-chromium"
     options = Options()
-    # options.add_argument('--headless')
+    options.add_argument('--headless')
     options.add_argument('--no-sandbox')
     options.add_argument('--disable-dev-shm-usage')
     driver = webdriver.Chrome('./bin/chromedriver', options=options)
@@ -36,19 +36,21 @@ def scrape_indeed(job, location):
     sleep(2)
 
     # Reached the website.
-    # Enter 'job' for the job category, and 'location' for the location, then click enter.
     try:
+        # Enter the 'job' for the job category
         driver.find_element_by_xpath(
             "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[1]/div[1]/div/div[2]/input").send_keys(job)
         sleep(2)
+        # Enter the 'location' for the location
         driver.find_element_by_xpath(
             "/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[2]/div[1]/div/div[2]/input").send_keys(location)
         sleep(2)
+        # Click enter
         driver.find_element_by_xpath("/html/body/div/div[2]/div[3]/div[1]/div/div/div/form/div[3]/button").send_keys(
             Keys.ENTER)
         sleep(5)
 
-        # Scrape the job info and store in data_list[]
+        # Scrape the job info and store it in data_list[]
         data_list = []
         page_number = 0
         while True:
@@ -60,6 +62,7 @@ def scrape_indeed(job, location):
             page_content = soup.find("table", attrs={"id": "pageContent"})
             job_cards = page_content.find_all("div", attrs={"class": "jobsearch-SerpJobCard"})
 
+            # Get elements of each job offer, remove indentations then add them to data_list[]
             for job_card in job_cards:
                 # Get the job info by scraping with BeautifulSoup
                 data = []
@@ -80,6 +83,7 @@ def scrape_indeed(job, location):
                 data.append(job_type)
                 data_list.append(data)
 
+            # Try to click the next page link.
             try:
                 page_button = driver.find_element_by_xpath(f"//span[@class='pn' and text()='{str(page_number + 1)}']")
                 page_button.click()
@@ -87,7 +91,7 @@ def scrape_indeed(job, location):
                 sleep(2)
 
             except:
-                print("Exiting")
+                print("Exiting.")
                 break
 
     # Need to avoid recaptcha thus terminate execution.
