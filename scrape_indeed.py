@@ -1,5 +1,5 @@
 """
-This file is a demonstration for scraping job information from indeed (https://www.indeed.com/).
+This file is a demonstration for scraping job information from indeed (https://jp.indeed.com/).
 """
 __author__ = "Shuta Gunraku"
 
